@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo LDFLAGS: -lsrt -lavcodec -lavutil -lswresample
+#cgo pkg-config: srt libavcodec libavutil libswresample
 #include <srt/srt.h>
 #include <libavcodec/avcodec.h>
 #include "aac_decoder.h"
