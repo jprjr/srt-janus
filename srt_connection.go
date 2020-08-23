@@ -51,7 +51,7 @@ func pumpData(dmx *ts.Demuxer, c chan *ts.Data, q chan int) {
     }
 }
 
-func (conn *srtConnection) attachJanus(c chan *janus.Handle, session *janus.Session, roomId uint64) {
+func (conn *srtConnection) attachJanus(c chan *janus.Handle, session *janus.Session, roomId uint64, janus_options map[string]interface{}) {
 
     config := webrtc.Configuration{
         ICEServers: []webrtc.ICEServer{
@@ -167,6 +167,7 @@ func (conn *srtConnection) attachJanus(c chan *janus.Handle, session *janus.Sess
         "ptype":   "publisher",
         "room":    roomId,
         "id":      RandUint32(),
+        "display": janus_options["display"],
     }, nil)
     if err != nil {
         log.Println("Failed to send handle join", err)
@@ -230,13 +231,16 @@ func newSrtConnection(m webrtc.MediaEngine, opusCodec *webrtc.RTPCodec, h264Code
     return conn
 }
 
-func (conn *srtConnection) Run(reader *srtReader, session *janus.Session) {
+func (conn *srtConnection) Run(reader *srtReader, session *janus.Session, janus_default_options map[string]interface{}) {
     defer reader.Close()
 
     var err error
     var d *ts.Data = nil
     var i int = 0
     var roomId uint64 = 0
+
+    janus_options := make(map[string]interface{})
+    janus_options["display"] = janus_default_options["display"]
 
     data_chan := make(chan *ts.Data)
     quit_chan := make(chan int)
@@ -307,7 +311,7 @@ func (conn *srtConnection) Run(reader *srtReader, session *janus.Session) {
         return
     }
 
-    go conn.attachJanus(handle_chan, session, roomId)
+    go conn.attachJanus(handle_chan, session, roomId, janus_options)
 
 AttachJanusLoop:
     for {

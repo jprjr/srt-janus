@@ -26,6 +26,7 @@ import (
     webrtc "github.com/pion/webrtc/v2"
     "github.com/pion/rtp/codecs"
     "strings"
+    "flag"
 )
 
 
@@ -39,15 +40,26 @@ func setupMediaEngine(opusCodec *webrtc.RTPCodec, h264Codec *webrtc.RTPCodec) we
 }
 
 func main() {
-    if len(os.Args) < 3 {
-        fmt.Printf("Usage: %s <listen-addr> <url>\n",os.Args[0])
-    }
-
     var port uint64 = 0
     var ip string
     var err error
 
-    listen_parts := strings.Split(os.Args[1],":")
+    janus_options := make(map[string]interface{})
+
+    // first handle flags
+    displayPtr := flag.String("display", "external", "Display name to set in Janus VideoRoom")
+
+    flag.Parse()
+    args := flag.Args()
+
+    if len(args) < 2 {
+        fmt.Printf("Usage: %s -display=external <listen-addr> <url>\n",os.Args[0])
+        os.Exit(1)
+    }
+
+    janus_options["display"] = *displayPtr
+
+    listen_parts := strings.Split(args[0],":")
 
     if len(listen_parts) == 1 {
         //assuming just specified a port
@@ -76,7 +88,7 @@ func main() {
     C.opus_encoder_init()
     defer srtgo.CleanupSRT()
 
-    gateway, err := janus.Connect(os.Args[2])
+    gateway, err := janus.Connect(args[1])
     if err != nil {
         fmt.Printf("Failed to connect to janus: %s\n",err)
         return
@@ -136,6 +148,6 @@ func main() {
         }
 
         conn := newSrtConnection(mediaEngine,opusCodec,h264Codec)
-        go conn.Run(newSrtReader(s),session)
+        go conn.Run(newSrtReader(s),session,janus_options)
     }
 }
