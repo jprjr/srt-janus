@@ -84,8 +84,8 @@ func main() {
 
     srtgo.InitSRT()
     C.avcodec_register_all()
-    C.aac_decoder_init()
-    C.opus_encoder_init()
+    C.srtjanus_aac_decoder_init()
+    C.srtjanus_opus_encoder_init()
     defer srtgo.CleanupSRT()
 
     gateway, err := janus.Connect(args[1])

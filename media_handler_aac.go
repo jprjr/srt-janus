@@ -17,15 +17,15 @@ import (
 type mediaHandlerAAC struct {
     audioTrack *webrtc.Track
     audioPacketizer TSPacketizer
-    decoder *C.aac_decoder_t
-    encoder *C.opus_encoder_t
+    decoder *C.srtjanus_aac_decoder_t
+    encoder *C.srtjanus_opus_encoder_t
     frames uint32
 }
 
 func NewMediaHandlerAAC() MediaHandler {
     return &mediaHandlerAAC{
-        decoder:         C.aac_decoder_new(),
-        encoder:         C.opus_encoder_new(),
+        decoder:         C.srtjanus_aac_decoder_new(),
+        encoder:         C.srtjanus_opus_encoder_new(),
         frames:          0,
     }
 }
@@ -56,7 +56,7 @@ func (h *mediaHandlerAAC) SendMedia(data *ts.PESData) error {
     //   * every 15360 frames (least common multiple of 960 and 1024),
     //     reset the timestamp
 
-    decoded_frames := C.aac_decoder_decode(h.decoder,(*C.uint8_t)(&data.Data[0]),C.size_t(len(data.Data)))
+    decoded_frames := C.srtjanus_aac_decoder_decode(h.decoder,(*C.uint8_t)(&data.Data[0]),C.size_t(len(data.Data)))
     if decoded_frames == 0 {
         log.Println("Error decoding AAC media")
         return errors.New("Error decoding AAC packet")
@@ -75,9 +75,9 @@ func (h *mediaHandlerAAC) SendMedia(data *ts.PESData) error {
     }
 
 
-    for C.aac_decoder_size(h.decoder) >= 960 {
-        raw_frame := C.aac_decoder_read(h.decoder,960);
-        packet := C.opus_encoder_encode(h.encoder,raw_frame)
+    for C.srtjanus_aac_decoder_size(h.decoder) >= 960 {
+        raw_frame := C.srtjanus_aac_decoder_read(h.decoder,960);
+        packet := C.srtjanus_opus_encoder_encode(h.encoder,raw_frame)
         if packet == nil {
             log.Println("Error encoding opus")
             return errors.New("Error encoding opus")
@@ -106,6 +106,6 @@ func (h *mediaHandlerAAC) SendMedia(data *ts.PESData) error {
 }
 
 func (h *mediaHandlerAAC) Close() {
-    C.aac_decoder_close(h.decoder)
-    C.opus_encoder_close(h.encoder)
+    C.srtjanus_aac_decoder_close(h.decoder)
+    C.srtjanus_opus_encoder_close(h.encoder)
 }

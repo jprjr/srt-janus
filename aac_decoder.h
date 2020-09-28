@@ -10,34 +10,34 @@ typedef struct {
     AVCodecContext *ctx;
     AVFrame *f;
     int got;
-    audio_fifo_t *fifo;
-} aac_decoder_t;
+    srtjanus_audio_fifo_t *fifo;
+} srtjanus_aac_decoder_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int
-aac_decoder_init(void); /* must be called very early in process */
+srtjanus_aac_decoder_init(void); /* must be called very early in process */
 
-aac_decoder_t *
-aac_decoder_new(void);
+srtjanus_aac_decoder_t *
+srtjanus_aac_decoder_new(void);
 
 void
-aac_decoder_close(aac_decoder_t *d);
+srtjanus_aac_decoder_close(srtjanus_aac_decoder_t *d);
 
 
 int
-aac_decoder_decode(aac_decoder_t *d, uint8_t *data, size_t len);
+srtjanus_aac_decoder_decode(srtjanus_aac_decoder_t *d, uint8_t *data, size_t len);
 
 AVFrame *
-aac_decoder_read(aac_decoder_t *d, uint32_t samples);
+srtjanus_aac_decoder_read(srtjanus_aac_decoder_t *d, uint32_t samples);
 
 uint32_t
-aac_decoder_size(aac_decoder_t *d);
+srtjanus_aac_decoder_size(srtjanus_aac_decoder_t *d);
 
 void
-aac_decoder_reset(aac_decoder_t *d);
+srtjanus_aac_decoder_reset(srtjanus_aac_decoder_t *d);
 
 
 #ifdef __cplusplus

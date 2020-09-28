@@ -1,4 +1,3 @@
-
 #include <stddef.h>
 #include <libavutil/mem.h>
 #include "aac_decoder.h"
@@ -17,18 +16,18 @@
 static AVCodec *codec = NULL;
 
 int
-aac_decoder_init(void) {
+srtjanus_aac_decoder_init(void) {
     codec = avcodec_find_decoder(AV_CODEC_ID_AAC);
     return codec == NULL;
 }
 
-aac_decoder_t *
-aac_decoder_new(void) {
+srtjanus_aac_decoder_t *
+srtjanus_aac_decoder_new(void) {
     int r;
-    aac_decoder_t *d = NULL;
+    srtjanus_aac_decoder_t *d = NULL;
     if(codec == NULL) return NULL;
 
-    d = (aac_decoder_t *)av_mallocz(sizeof(aac_decoder_t));
+    d = (srtjanus_aac_decoder_t *)av_mallocz(sizeof(srtjanus_aac_decoder_t));
     if(d == NULL) return NULL;
 
     d->f = av_frame_alloc();
@@ -44,7 +43,7 @@ aac_decoder_new(void) {
         return NULL;
     }
 
-    d->fifo = audio_fifo_new();
+    d->fifo = srtjanus_audio_fifo_new();
     if(d->fifo == NULL) {
         avcodec_free_context(&d->ctx);
         av_frame_free(&d->f);
@@ -58,7 +57,7 @@ aac_decoder_new(void) {
     d->ctx->channels    = CHANNELS;
 
     if((r = avcodec_open2(d->ctx,codec,NULL)) < 0) {
-        aac_decoder_close(d);
+        srtjanus_aac_decoder_close(d);
         return NULL;
     }
 
@@ -67,15 +66,15 @@ aac_decoder_new(void) {
 
 
 void
-aac_decoder_close(aac_decoder_t *d) {
+srtjanus_aac_decoder_close(srtjanus_aac_decoder_t *d) {
     avcodec_free_context(&d->ctx);
     av_frame_free(&d->f);
-    audio_fifo_close(d->fifo);
+    srtjanus_audio_fifo_close(d->fifo);
     av_free(d);
 }
 
 int
-aac_decoder_decode(aac_decoder_t *d, uint8_t *data, size_t len) {
+srtjanus_aac_decoder_decode(srtjanus_aac_decoder_t *d, uint8_t *data, size_t len) {
     AVPacket packet;
     int total;
     int got;
@@ -104,7 +103,7 @@ aac_decoder_decode(aac_decoder_t *d, uint8_t *data, size_t len) {
         if(!got || !read) break;
         DEBUG_LOG("read %d/%u bytes\n",read,len);
 
-        audio_fifo_load(d->fifo,d->f);
+        srtjanus_audio_fifo_load(d->fifo,d->f);
 
         len -= read;
         total++;
@@ -115,17 +114,17 @@ aac_decoder_decode(aac_decoder_t *d, uint8_t *data, size_t len) {
 }
 
 AVFrame *
-aac_decoder_read(aac_decoder_t *d, uint32_t samples) {
-    return audio_fifo_read(d->fifo,samples);
+srtjanus_aac_decoder_read(srtjanus_aac_decoder_t *d, uint32_t samples) {
+    return srtjanus_audio_fifo_read(d->fifo,samples);
 }
 
 uint32_t
-aac_decoder_size(aac_decoder_t *d) {
-    return audio_fifo_size(d->fifo);
+srtjanus_aac_decoder_size(srtjanus_aac_decoder_t *d) {
+    return srtjanus_audio_fifo_size(d->fifo);
 }
 
 void
-aac_decoder_reset(aac_decoder_t *d) {
+srtjanus_aac_decoder_reset(srtjanus_aac_decoder_t *d) {
     avcodec_flush_buffers(d->ctx);
-    audio_fifo_reset(d->fifo);
+    srtjanus_audio_fifo_reset(d->fifo);
 }

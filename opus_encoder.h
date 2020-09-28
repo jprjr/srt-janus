@@ -9,23 +9,23 @@ typedef struct {
     AVCodecContext *ctx;
     AVDictionary *opts;
     AVPacket *packet;
-} opus_encoder_t;
+} srtjanus_opus_encoder_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int
-opus_encoder_init(void);
+srtjanus_opus_encoder_init(void);
 
-opus_encoder_t *
-opus_encoder_new(void);
+srtjanus_opus_encoder_t *
+srtjanus_opus_encoder_new(void);
 
 void
-opus_encoder_close(opus_encoder_t *e);
+srtjanus_opus_encoder_close(srtjanus_opus_encoder_t *e);
 
 AVPacket *
-opus_encoder_encode(opus_encoder_t *e, AVFrame *frame);
+srtjanus_opus_encoder_encode(srtjanus_opus_encoder_t *e, AVFrame *frame);
 
 #ifdef __cplusplus
 }

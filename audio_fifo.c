@@ -17,11 +17,11 @@
 #define DEBUG_LOG(...)
 #endif
 
-audio_fifo_t *
-audio_fifo_new(void) {
-    audio_fifo_t *f = NULL;
+srtjanus_audio_fifo_t *
+srtjanus_audio_fifo_new(void) {
+    srtjanus_audio_fifo_t *f = NULL;
 
-    f = (audio_fifo_t *)av_mallocz(sizeof(audio_fifo_t));
+    f = (srtjanus_audio_fifo_t *)av_mallocz(sizeof(srtjanus_audio_fifo_t));
     if(f == NULL) return NULL;
 
     f->frame = av_frame_alloc();
@@ -70,7 +70,7 @@ audio_fifo_new(void) {
     av_opt_set_channel_layout(f->resampler, "in_channel_layout", av_get_default_channel_layout(CHANNELS), 0);
 
     if(swr_init(f->resampler) < 0) {
-        audio_fifo_close(f);
+        srtjanus_audio_fifo_close(f);
         return NULL;
     }
 
@@ -78,7 +78,8 @@ audio_fifo_new(void) {
 }
 
 
-void audio_fifo_close(audio_fifo_t *f) {
+void
+srtjanus_audio_fifo_close(srtjanus_audio_fifo_t *f) {
     if(f->frame != NULL) {
         av_frame_free(&f->frame);
     }
@@ -95,7 +96,7 @@ void audio_fifo_close(audio_fifo_t *f) {
 }
 
 static int
-audio_fifo_realloc_buffer(audio_fifo_t *f, uint32_t size) {
+srtjanus_audio_fifo_realloc_buffer(srtjanus_audio_fifo_t *f, uint32_t size) {
     uint8_t *newBuffer = NULL;
     uint32_t newBufferSize = f->bufferSize;
 
@@ -116,12 +117,13 @@ audio_fifo_realloc_buffer(audio_fifo_t *f, uint32_t size) {
     return 0;
 }
 
-int audio_fifo_load(audio_fifo_t *f, AVFrame *frame) {
+int
+srtjanus_audio_fifo_load(srtjanus_audio_fifo_t *f, AVFrame *frame) {
     int samples_needed;
     int out_samples;
 
     samples_needed = swr_get_out_samples(f->resampler,frame->nb_samples);
-    if(audio_fifo_realloc_buffer(f,(uint32_t)samples_needed) != 0) {
+    if(srtjanus_audio_fifo_realloc_buffer(f,(uint32_t)samples_needed) != 0) {
         return 1;
     }
 
@@ -141,12 +143,12 @@ int audio_fifo_load(audio_fifo_t *f, AVFrame *frame) {
 }
 
 uint32_t
-audio_fifo_size(audio_fifo_t *f) {
+srtjanus_audio_fifo_size(srtjanus_audio_fifo_t *f) {
     return (uint32_t) av_audio_fifo_size(f->fifo);
 }
 
 AVFrame *
-audio_fifo_read(audio_fifo_t *f, uint32_t samples) {
+srtjanus_audio_fifo_read(srtjanus_audio_fifo_t *f, uint32_t samples) {
     uint32_t bufferSizeBytes;
     int r;
 
@@ -155,7 +157,7 @@ audio_fifo_read(audio_fifo_t *f, uint32_t samples) {
         return NULL;
     }
 
-    if(audio_fifo_realloc_buffer(f,samples) != 0) {
+    if(srtjanus_audio_fifo_realloc_buffer(f,samples) != 0) {
         DEBUG_LOG("could not realloc buffer\n");
         return NULL;
     }
@@ -182,7 +184,7 @@ audio_fifo_read(audio_fifo_t *f, uint32_t samples) {
 }
 
 AVFrame *
-audio_fifo_flush(audio_fifo_t *f) {
+srtjanus_audio_fifo_flush(srtjanus_audio_fifo_t *f) {
     uint32_t bufferSizeBytes;
     int r;
     uint32_t samples;
@@ -205,7 +207,7 @@ audio_fifo_flush(audio_fifo_t *f) {
         return NULL;
     }
 
-    if(audio_fifo_realloc_buffer(f,samples) != 0) {
+    if(srtjanus_audio_fifo_realloc_buffer(f,samples) != 0) {
         DEBUG_LOG("could not realloc buffer\n");
         return NULL;
     }
@@ -229,6 +231,6 @@ audio_fifo_flush(audio_fifo_t *f) {
 }
 
 void
-audio_fifo_reset(audio_fifo_t *f) {
+srtjanus_audio_fifo_reset(srtjanus_audio_fifo_t *f) {
     av_audio_fifo_reset(f->fifo);
 }
